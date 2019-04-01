@@ -6,7 +6,7 @@ import libyaml.{LibYaml, TokenType}
 import scalanative.native._
 import scalanative.native.stdio._
 
-object Main {
+object Example2 {
   def main(args: Array[String]): Unit = {
     Zone { implicit zone =>
       val fh = fopen(toCString("sample/config/public.yaml"), toCString("r"))

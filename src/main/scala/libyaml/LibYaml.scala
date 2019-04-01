@@ -15,4 +15,10 @@ object LibYaml {
       alloc[clib.yaml_token_t]
     }
   }
+
+  object Event {
+    def apply()(implicit z: Zone): Ptr[clib.yaml_event_t] = {
+      alloc[clib.yaml_event_t]
+    }
+  }
 }

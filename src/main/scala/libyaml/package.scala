@@ -37,6 +37,26 @@ package object libyaml {
     val ScalarToken = 21
   }
 
+  type EventType = CLong
+  object EventType {
+    val NoEvent = 0
+
+    val StreamStartEvent = 1
+    val StreamEndEvent = 2
+
+    val DocumentStartEvent = 3
+    val DocumentEndEvent = 4
+
+    val AliasEvent = 5
+    val ScalarEvent = 6
+
+    val SequenceStartEvent = 7
+    val SequenceEndEvent = 8
+
+    val MappingStartEvent = 9
+    val MappingEndEvent = 10
+  }
+
   type Encoding = CLong
   object Encoding {
     val Any = 0
@@ -56,5 +76,21 @@ package object libyaml {
 
     val Literal = 4
     val Folded = 5
+  }
+
+  type SequenceStyle = CLong
+  object SequenceStyle {
+    val AnySequenceStyle = 0
+
+    val BlockSequenceStyle = 1
+    val FlowSequenceStyle = 2
+  }
+
+  type MappingStyle = CLong
+  object MappingStyle {
+    val AnyMappingStyle = 0
+
+    val BlockMappingStyle = 1
+    val FlowMappingStyle = 2
   }
 }
