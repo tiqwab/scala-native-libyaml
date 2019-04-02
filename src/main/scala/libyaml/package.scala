@@ -93,4 +93,26 @@ package object libyaml {
     val BlockMappingStyle = 1
     val FlowMappingStyle = 2
   }
+
+  // node tag
+  val NullTag = "tag:yaml.org,2002:null"
+  val BoolTag = "tag:yaml.org,2002:bool"
+  val StrTag = "tag:yaml.org,2002:str"
+  val IntTag = "tag:yaml.org,2002:int"
+  val FloatTag = "tag:yaml.org,2002:float"
+  val TimestampTag = "tag:yaml.org,2002:timestamp"
+  val SeqTag = "tag:yaml.org,2002:seq"
+  val MapTag = "tag:yaml.org,2002:map"
+  val DefaultScalarTag = StrTag
+  val DefaultSequenceTag = SeqTag
+  val DefaultMappingTag = MapTag
+
+  type NodeType = CLong
+  object NodeType {
+    val NoNode = 0
+
+    val ScalarNode = 1
+    val SequenceNode = 2
+    val MappingNode = 3
+  }
 }
