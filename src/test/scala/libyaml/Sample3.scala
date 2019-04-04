@@ -1,13 +1,17 @@
-package example
+package libyaml
 
 import libyaml.clib._
-import libyaml.{EventType, LibYaml}
+import minitest._
 
 import scalanative.native._
 import scalanative.native.stdio._
 
-object Example3 {
-  def main(args: Array[String]): Unit = {
+/**
+  * Run the third sample code in https://www.wpsoftware.net/andrew/pages/libyaml.html
+  */
+object Sample3 extends SimpleTestSuite {
+
+  test("should run the third sample code") {
     Zone { implicit zone =>
       val fh = fopen(toCString("sample/config/public.yaml"), toCString("r"))
       val parser = LibYaml.Parser()
@@ -15,13 +19,13 @@ object Example3 {
 
       // Initialize parser
       if (yaml_parser_initialize(parser) == 0) {
-        fputs(toCString("Failed to initialize parser!\n"), stderr)
+        fail("Failed to initialize parser!\n")
       }
 
       // Check null pointer like this?
       // ref. https://github.com/scala-native/scala-native/pull/248
       if (fh == null) {
-        fputs(toCString("Failed to open file!\n"), stderr)
+        fail("Failed to open file!\n")
       }
 
       // Set input file
@@ -56,7 +60,7 @@ object Example3 {
             printf(toCString("Got scalar (value %s)\n"),
                    !event._2.cast[Ptr[yaml_event_scalar]]._3)
           case _ =>
-            printf(toCString("unexpected type: %d\n"), !event._1)
+            fail(s"unexpected type: ${!event._1}\n")
         }
         if (!event._1 != EventType.StreamEndEvent) {
           yaml_event_delete(event)
@@ -67,6 +71,9 @@ object Example3 {
       // Cleanup
       yaml_parser_delete(parser)
       fclose(fh)
+
+      ()
     }
   }
+
 }
