@@ -1,6 +1,7 @@
 package libyaml
 
 import libyaml.clib._
+import libyaml.clib.implicits._
 import minitest._
 
 import scalanative.native._
@@ -12,6 +13,7 @@ object YamlParserLoadTest extends SimpleTestSuite {
       val inputStr =
         """
           |%YAML 1.1
+          |%TAG !yaml! tag:yaml.org,2002:
           |---
           |name: Alice
           |favorites:
@@ -37,10 +39,21 @@ object YamlParserLoadTest extends SimpleTestSuite {
         fail("Failed to parse document!\n")
       }
 
-      val major = !(!document._2)._1
-      val minor = !(!document._2)._2
+      // Check veresion directive
+      val major = document.version_directive.major
+      val minor = document.version_directive.minor
       assert(major == 1, "major version should be 1")
       assert(minor == 1, "minor version should be 1")
+
+      // Check tag directive
+      val start = document.tag_directives.start
+      val end = document.tag_directives.end
+      assert(end - start == 1,
+             s"document should contain only one tag but ${end - start}")
+      val handle = fromCString(start.handle.cast[CString])
+      val prefix = fromCString(start.prefix.cast[CString])
+      assert(handle == "!yaml!", s"unexpected handle: $handle")
+      assert(prefix == "tag:yaml.org,2002:", s"unexpected prefix: $prefix")
 
       yaml_document_delete(document)
       yaml_parser_delete(parser)

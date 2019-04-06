@@ -185,29 +185,57 @@ object clib {
   //         yaml_tag_directive_t *tag_directives_start,
   //         yaml_tag_directive_t *tag_directives_end,
   //         int start_implicit, int end_implicit);
+  def document_initialize(document: Ptr[yaml_document_t],
+                          version_directive: Ptr[yaml_version_directive_t],
+                          tag_directive_start: Ptr[yaml_tag_directive_t],
+                          tag_directive_end: Ptr[yaml_tag_directive_t],
+                          start_implicit: CInt,
+                          end_implicit: CInt): CInt = extern
 
   // void yaml_document_delete(yaml_document_t *document);
   def yaml_document_delete(document: Ptr[yaml_document_t]): Unit = extern
 
   // yaml_node_t *yaml_document_get_node(yaml_document_t *document, int index);
+  def yaml_document_get(document: Ptr[yaml_document_t],
+                        index: CInt): Ptr[yaml_node_t] = extern
 
   // yaml_node_t *yaml_document_get_root_node(yaml_document_node *document);
+  def yaml_document_get_root_node(
+      document: Ptr[yaml_document_t]): Ptr[yaml_node_t] = extern
 
   // int yaml_document_add_scalar(yaml_document_t *document,
   //         yaml_char_t *tag, yaml_char_t *value, int length,
   //         yaml_scalar_style_t style);
+  def yaml_document_add_scalar(document: Ptr[yaml_document_t],
+                               tag: Ptr[yaml_char_t],
+                               value: Ptr[yaml_char_t],
+                               length: CInt,
+                               style: yaml_scalar_style_t): CInt = extern
 
   // int yaml_document_add_sequence(yaml_document_t *document,
   //         yaml_char_t *tag, yaml_sequence_style_t style);
+  def yaml_document_add_sequence(document: Ptr[yaml_document_t],
+                                 tag: Ptr[yaml_char_t],
+                                 style: yaml_sequence_style_t): CInt = extern
 
   // int yaml_document_add_mapping(yaml_document_t *document,
   //         yaml_char_t *tag, yaml_mapping_style_t style);
+  def yaml_document_add_mapping(document: Ptr[yaml_document_t],
+                                tag: Ptr[yaml_char_t],
+                                style: yaml_mapping_style_t): CInt = extern
 
   // int yaml_document_append_sequence_item(yaml_document_t *document,
   //         int sequence, int item);
+  def yaml_document_append_sequence_item(document: Ptr[yaml_document_t],
+                                         sequence: CInt,
+                                         item: CInt): CInt = extern
 
-  // int yaml_document_append_mapping_pair(yaml_document_ *document,
+  // int yaml_document_append_mapping_pair(yaml_document_t *document,
   //         int mapping, int key, int value);
+  def yaml_document_append_mapping_pair(document: Ptr[yaml_document_t],
+                                        mapping: CInt,
+                                        key: CInt,
+                                        value: CInt): CInt = extern
 
   //
   // Parser Definitions
@@ -293,4 +321,34 @@ object clib {
   // int yaml_emitter_dump(yaml_emitter_t *emitter, yaml_document_t *document);
 
   // int yaml_emitter_flush(yaml_emitter_t *emitter);
+
+  object implicits {
+    implicit class yaml_version_directive_t_ops(
+        p: Ptr[yaml_version_directive_t]) {
+      def major: CInt = !p._1
+      def minor: CInt = !p._2
+    }
+
+    implicit class yaml_tag_directive_t_ops(p: Ptr[yaml_tag_directive_t]) {
+      def handle: Ptr[yaml_char_t] = !p._1
+      def prefix: Ptr[yaml_char_t] = !p._2
+    }
+
+    implicit class yaml_tag_directives_ops(
+        p: Ptr[yaml_document_tag_directives]) {
+      def start: Ptr[yaml_tag_directive_t] = !p._1
+      def end: Ptr[yaml_tag_directive_t] = !p._2
+    }
+
+    implicit class yaml_document_t_ops(p: Ptr[yaml_document_t]) {
+      def version_directive: Ptr[yaml_version_directive_t] = !p._2
+      def tag_directives: Ptr[yaml_document_tag_directives] = p._3
+      /*
+      def start_implicit: CInt = !p._4
+      def end_implicit: CInt = !p._5
+      def start_mark: yaml_mark_t = !p._6
+      def end_mark: yaml_mark_t = !p._7
+     */
+    }
+  }
 }
