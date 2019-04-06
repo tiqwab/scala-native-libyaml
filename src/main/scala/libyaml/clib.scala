@@ -185,19 +185,19 @@ object clib {
   //         yaml_tag_directive_t *tag_directives_start,
   //         yaml_tag_directive_t *tag_directives_end,
   //         int start_implicit, int end_implicit);
-  def document_initialize(document: Ptr[yaml_document_t],
-                          version_directive: Ptr[yaml_version_directive_t],
-                          tag_directive_start: Ptr[yaml_tag_directive_t],
-                          tag_directive_end: Ptr[yaml_tag_directive_t],
-                          start_implicit: CInt,
-                          end_implicit: CInt): CInt = extern
+  def yaml_document_initialize(document: Ptr[yaml_document_t],
+                               version_directive: Ptr[yaml_version_directive_t],
+                               tag_directive_start: Ptr[yaml_tag_directive_t],
+                               tag_directive_end: Ptr[yaml_tag_directive_t],
+                               start_implicit: CInt,
+                               end_implicit: CInt): CInt = extern
 
   // void yaml_document_delete(yaml_document_t *document);
   def yaml_document_delete(document: Ptr[yaml_document_t]): Unit = extern
 
   // yaml_node_t *yaml_document_get_node(yaml_document_t *document, int index);
-  def yaml_document_get(document: Ptr[yaml_document_t],
-                        index: CInt): Ptr[yaml_node_t] = extern
+  def yaml_document_get_node(document: Ptr[yaml_document_t],
+                             index: CInt): Ptr[yaml_node_t] = extern
 
   // yaml_node_t *yaml_document_get_root_node(yaml_document_node *document);
   def yaml_document_get_root_node(
@@ -340,12 +340,66 @@ object clib {
       def end: Ptr[yaml_tag_directive_t] = !p._2
     }
 
+    implicit class yaml_node_data_u_ops(p: Ptr[yaml_node_data_u]) {
+      def scalar: Ptr[yaml_node_scalar] = p.cast[Ptr[yaml_node_scalar]]
+      def sequence: Ptr[yaml_node_sequence] = p.cast[Ptr[yaml_node_sequence]]
+      def mapping: Ptr[yaml_node_mapping] = p.cast[Ptr[yaml_node_mapping]]
+    }
+
+    implicit class yaml_node_scalar_ops(p: Ptr[yaml_node_scalar]) {
+      def value: Ptr[yaml_char_t] = !p._1
+      def length: CSize = !p._2
+      def style: yaml_scalar_style_t = !p._3
+    }
+
+    implicit class yaml_node_sequence_items_ops(
+        p: Ptr[yaml_node_sequence_items]) {
+      def start: Ptr[yaml_node_item_t] = !p._1
+      def end: Ptr[yaml_node_item_t] = !p._2
+      def top: Ptr[yaml_node_item_t] = !p._3
+    }
+
+    implicit class yaml_node_sequence_ops(p: Ptr[yaml_node_sequence]) {
+      def items: Ptr[yaml_node_sequence_items] = p._1
+      def style: yaml_sequence_style_t = !p._2
+    }
+
+    implicit class yaml_node_pair_t_ops(p: Ptr[yaml_node_pair_t]) {
+      def key: CInt = !p._1
+      def value: CInt = !p._2
+    }
+
+    implicit class yaml_node_mapping_pairs_ops(
+        p: Ptr[yaml_node_mapping_pairs]) {
+      def start: Ptr[yaml_node_pair_t] = !p._1
+      def end: Ptr[yaml_node_pair_t] = !p._2
+      def top: Ptr[yaml_node_pair_t] = !p._3
+    }
+
+    implicit class yaml_node_mapping_ops(p: Ptr[yaml_node_mapping]) {
+      def pairs: Ptr[yaml_node_mapping_pairs] = p._1
+      def style: yaml_mapping_style_t = !p._2
+    }
+
+    implicit class yaml_node_t_ops(p: Ptr[yaml_node_t]) {
+      def typ: NodeType = !p._1
+      def tag: Ptr[yaml_char_t] = !p._2
+      def data: Ptr[yaml_node_data_u] = p._3.cast[Ptr[yaml_node_data_u]]
+    }
+
+    implicit class yaml_document_nodes_ops(p: Ptr[yaml_document_nodes]) {
+      def start: Ptr[yaml_node_t] = !p._1
+      def end: Ptr[yaml_node_t] = !p._2
+      def top: Ptr[yaml_node_t] = !p._3
+    }
+
     implicit class yaml_document_t_ops(p: Ptr[yaml_document_t]) {
+      def nodes: Ptr[yaml_document_nodes] = p._1
       def version_directive: Ptr[yaml_version_directive_t] = !p._2
       def tag_directives: Ptr[yaml_document_tag_directives] = p._3
-      /*
       def start_implicit: CInt = !p._4
       def end_implicit: CInt = !p._5
+      /*
       def start_mark: yaml_mark_t = !p._6
       def end_mark: yaml_mark_t = !p._7
      */
