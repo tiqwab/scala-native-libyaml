@@ -187,6 +187,7 @@ object clib {
   //         int start_implicit, int end_implicit);
 
   // void yaml_document_delete(yaml_document_t *document);
+  def yaml_document_delete(document: Ptr[yaml_document_t]): Unit = extern
 
   // yaml_node_t *yaml_document_get_node(yaml_document_t *document, int index);
 
@@ -224,6 +225,9 @@ object clib {
   def yaml_parser_delete(parser: Ptr[yaml_parser_t]): Unit = extern
 
   // void yaml_parser_set_input_string(yaml_parser_t *parser, const unsigned char *input, size_t size);
+  def yaml_parser_set_input_string(parser: Ptr[yaml_parser_t],
+                                   input: Ptr[CUnsignedChar],
+                                   size: CSize): Unit = extern
 
   // void yaml_parser_set_input_file(yaml_parser_t *parser, FILE *file)
   def yaml_parser_set_input_file(parser: Ptr[yaml_parser_t],
@@ -232,6 +236,8 @@ object clib {
   // void yaml_parser_set_input(yaml_parser_t *parser, yaml_read_handler_t *handler, void *data);
 
   // void yaml_parser_set_encoding(yaml_parser_t *parser, yaml_encoding_t encoding);
+  def yaml_parser_set_encoding(parser: Ptr[yaml_parser_t],
+                               encoding: yaml_encoding_t): Unit = extern
 
   // int yaml_parser_scan(yaml_parser_t *parser, yaml_token_t *token)
   def yaml_parser_scan(parser: Ptr[yaml_parser_t],
@@ -242,6 +248,8 @@ object clib {
                         event: Ptr[yaml_event_t]): CInt = extern
 
   // int yaml_parser_load(yaml_parser_t *parser, yaml_document_t *document);
+  def yaml_parser_load(parser: Ptr[yaml_parser_t],
+                       document: Ptr[yaml_document_t]): CInt = extern
 
   //
   // Emitter Definitions

@@ -21,4 +21,10 @@ object LibYaml {
       alloc[clib.yaml_event_t]
     }
   }
+
+  object Document {
+    def apply()(implicit z: Zone): Ptr[clib.yaml_document_t] = {
+      alloc[clib.yaml_document_t]
+    }
+  }
 }
