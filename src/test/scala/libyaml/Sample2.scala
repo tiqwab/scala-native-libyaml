@@ -1,18 +1,23 @@
-package example
+package libyaml
 
 import libyaml.clib._
-import libyaml.{LibYaml, TokenType}
+import minitest._
 
 import scalanative.native._
 import scalanative.native.stdio._
 
-object Example2 {
-  def main(args: Array[String]): Unit = {
+/**
+  * Run the second sample code in https://www.wpsoftware.net/andrew/pages/libyaml.html
+  */
+object Sample2 extends SimpleTestSuite {
+
+  test("should run the second sample code") {
     Zone { implicit zone =>
       val fh = fopen(toCString("sample/config/public.yaml"), toCString("r"))
       val parser = LibYaml.Parser()
       val token = LibYaml.Token()
 
+      // show version
       printf(toCString("%s\n"), yaml_get_version_string())
 
       val major = alloc[CInt]
@@ -21,22 +26,15 @@ object Example2 {
       yaml_get_version(major, minor, patch)
       printf(toCString("%d.%d.%d\n"), !major, !minor, !patch)
 
-      printf(toCString("scalar %p\n"), CVararg(token))
-      printf(toCString("%d\n"), sizeof[yaml_token_type_t])
-      printf(toCString("%d\n"), sizeof[yaml_token_data_u])
-      printf(toCString("%d\n"), sizeof[yaml_mark_t])
-      printf(toCString("%d\n"), sizeof[yaml_token_scalar])
-      printf(toCString("%d\n"), sizeof[yaml_token_s])
-
       // Initialize parser
       if (yaml_parser_initialize(parser) == 0) {
-        fputs(toCString("Failed to initialize parser!\n"), stderr)
+        fail("Failed to initialize parser!\n")
       }
 
       // Check null pointer like this?
       // ref. https://github.com/scala-native/scala-native/pull/248
       if (fh == null) {
-        fputs(toCString("Failed to open file!\n"), stderr)
+        fail("Failed to open file!\n")
       }
 
       // Set input file
@@ -77,6 +75,9 @@ object Example2 {
       // Cleanup
       yaml_parser_delete(parser)
       fclose(fh)
+
+      ()
     }
   }
+
 }

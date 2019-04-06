@@ -4,3 +4,9 @@ scalaVersion := "2.11.12"
 nativeLinkStubs := true
 
 enablePlugins(ScalaNativePlugin)
+
+libraryDependencies ++= Seq(
+  "io.monix" %%% "minitest" % "2.3.2"  % Test
+)
+
+testFrameworks += new TestFramework("minitest.runner.Framework")
