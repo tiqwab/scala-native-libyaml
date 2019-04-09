@@ -7,7 +7,7 @@ import minitest._
 import scalanative.native._
 
 object YamlParserLoadTest extends SimpleTestSuite {
-  test("parse string input to document") {
+  test("should parse string input to document") {
     Zone { implicit z =>
       // Prepare input
       val inputStr =
