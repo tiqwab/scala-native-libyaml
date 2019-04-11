@@ -129,6 +129,8 @@ object clib {
                                          _implicit: CInt): CInt = extern
 
   // int yaml_alias_event_initialize(yaml_event_t *event, yaml_char_t *anchor);
+  def yaml_alias_event_initialize(event: Ptr[yaml_event_t],
+                                  anchor: Ptr[yaml_char_t]): CInt = extern
 
   // int yaml_scalar_event_initialize(yaml_event_t *event,
   //         yaml_char_t *anchor, yaml_char_t *tag,
@@ -410,6 +412,10 @@ object clib {
       def _implicit: CInt = !p._1
     }
 
+    implicit class yaml_event_alias_ops(p: Ptr[yaml_event_alias]) {
+      def anchor: Ptr[yaml_char_t] = !p._1
+    }
+
     implicit class yaml_event_scalar_ops(p: Ptr[yaml_event_scalar]) {
       def anchor: Ptr[yaml_char_t] = !p._1
       def tag: Ptr[yaml_char_t] = !p._2
@@ -443,6 +449,7 @@ object clib {
         p.cast[Ptr[yaml_event_document_start]]
       def document_end: Ptr[yaml_event_document_end] =
         p.cast[Ptr[yaml_event_document_end]]
+      def alias: Ptr[yaml_event_alias] = p.cast[Ptr[yaml_event_alias]]
       def scalar: Ptr[yaml_event_scalar] = p.cast[Ptr[yaml_event_scalar]]
       def mapping_start: Ptr[yaml_event_mapping_start] =
         p.cast[Ptr[yaml_event_mapping_start]]

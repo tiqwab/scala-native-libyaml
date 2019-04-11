@@ -54,7 +54,10 @@ object EmitterTest extends SimpleTestSuite {
           event_to,
           event_from.data.document_end._implicit)
       case EventType.AliasEvent =>
-        ???
+        yaml_alias_event_initialize(
+          event_to,
+          event_from.data.alias.anchor
+        )
       case EventType.ScalarEvent =>
         yaml_scalar_event_initialize(
           event_to,
@@ -139,7 +142,7 @@ object EmitterTest extends SimpleTestSuite {
           Right(())
 
         case EventType.AliasEvent =>
-          ???
+          Left("not yet implemented for AliasEvent")
 
         case EventType.ScalarEvent =>
           val anchor1 = event1.data.scalar.anchor.cast[CString]
