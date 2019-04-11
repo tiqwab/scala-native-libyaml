@@ -78,16 +78,19 @@ package object libyaml {
     val Folded = 5
   }
 
-  type SequenceStyle = CLong
+  type SequenceStyle = CLong with SequenceStyle.Value.type
   object SequenceStyle {
+    private[libyaml] object Value
+
     val AnySequenceStyle = 0
 
     val BlockSequenceStyle = 1
     val FlowSequenceStyle = 2
   }
 
-  type MappingStyle = CLong
+  type MappingStyle = CLong with MappingStyle.Value.type
   object MappingStyle {
+    private[libyaml] object Value
     val AnyMappingStyle = 0
 
     val BlockMappingStyle = 1

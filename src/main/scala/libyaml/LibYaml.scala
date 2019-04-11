@@ -27,4 +27,11 @@ object LibYaml {
       alloc[clib.yaml_document_t]
     }
   }
+
+  object Emitter {
+    def apply()(implicit z: Zone): Ptr[clib.yaml_emitter_t] = {
+      z.alloc(432).cast[Ptr[clib.yaml_emitter_t]] // FIXME
+      // alloc[clib.yaml_emitter_t]
+    }
+  }
 }
