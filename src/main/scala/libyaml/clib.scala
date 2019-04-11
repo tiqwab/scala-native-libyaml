@@ -386,7 +386,7 @@ object clib {
         p: Ptr[yaml_event_document_start]) {
       def version_directive: Ptr[yaml_version_directive_t] = !p._1
       def tag_directives: Ptr[yaml_event_tag_directives] =
-        p._2.cast[Ptr[yaml_event_tag_directives]]
+        p._2 // .cast[Ptr[yaml_event_tag_directives]]
       def _implicit: CInt = !p._3
     }
 
