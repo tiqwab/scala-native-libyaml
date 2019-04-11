@@ -118,4 +118,24 @@ package object libyaml {
     val SequenceNode = 2
     val MappingNode = 3
   }
+
+  type Break = CLong
+  object Break {
+    val AnyBreak = 0
+    val CRBreak = 1
+    val LNBreak = 2
+    val CRLNBreak = 3
+  }
+
+  type ErrorType = CLong
+  object ErrorType {
+    val NoError = 0
+    val MemoryError = 1
+    val ReaderError = 2
+    val ScannerError = 3
+    val ParserError = 4
+    val ComposerError = 5
+    val WriterError = 6
+    val EmitterError = 7
+  }
 }

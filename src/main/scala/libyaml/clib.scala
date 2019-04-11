@@ -34,9 +34,9 @@ object clib {
 
   type yaml_encoding_t = Encoding
 
-  // yaml_break_t
+  type yaml_break_t = Break
 
-  // yaml_error_type_t
+  type yaml_error_type_t = ErrorType
 
   type yaml_mark_s = CStruct3[CSize, CSize, CSize]
   type yaml_mark_t = yaml_mark_s
@@ -303,6 +303,9 @@ object clib {
                                  file: Ptr[FILE]): Unit = extern
 
   // void yaml_parser_set_input(yaml_parser_t *parser, yaml_read_handler_t *handler, void *data);
+  def yaml_parser_set_input(parser: Ptr[yaml_parser_t],
+                            handler: Ptr[yaml_read_handler_t],
+                            data: Ptr[Byte]): Unit = extern
 
   // void yaml_parser_set_encoding(yaml_parser_t *parser, yaml_encoding_t encoding);
   def yaml_parser_set_encoding(parser: Ptr[yaml_parser_t],
@@ -343,9 +346,14 @@ object clib {
                                      written: Ptr[CSize]): Unit = extern
 
   // void yaml_emitter_set_output_file(yaml_emitter_t *emitter, FILE *file);
+  def yaml_emitter_set_output_file(emitter: Ptr[yaml_emitter_t],
+                                   file: Ptr[stdio.FILE]): Unit = extern
 
   // void yaml_emitter_set_output(yaml_emitter_t *emitter,
   //         yaml_write_handler_t *handler, void *data);
+  def yaml_emitter_set_output(emitter: Ptr[yaml_emitter_t],
+                              handler: Ptr[yaml_write_handler_t],
+                              data: Ptr[Byte]): Unit = extern
 
   // void yaml_emitter_set_encoding(yaml_emitter_t *emitter, yaml_encoding_t encoding);
   def yaml_emitter_set_encoding(emitter: Ptr[yaml_emitter_t],
@@ -356,26 +364,37 @@ object clib {
                                  canonical: CInt): Unit = extern
 
   // void yaml_emitter_set_indent(yaml_emitter_t *emitter, int indent);
+  def yaml_emitter_set_indent(emitter: Ptr[yaml_emitter_t],
+                              indent: CInt): Unit = extern
 
   // void yaml_emitter_set_width(yaml_emitter_t *emitter, int width);
+  def yaml_emitter_set_width(emitter: Ptr[yaml_emitter_t], width: CInt): Unit =
+    extern
 
   // void yaml_emitter_set_unicode(yaml_emitter_t *emitter, int unicode);
   def yaml_emitter_set_unicode(emitter: Ptr[yaml_emitter_t],
                                unicode: CInt): Unit = extern
 
   // void yaml_emitter_set_break(yaml_emitter_t *emitter, yaml_break_t line_break);
+  def yaml_emitter_set_break(emitter: Ptr[yaml_emitter_t],
+                             line_break: yaml_break_t): Unit = extern
 
   // int yaml_emitter_emit(yaml_emitter_t *emitter, yaml_event_t *event);
   def yaml_emitter_emit(emitter: Ptr[yaml_emitter_t],
                         event: Ptr[yaml_event_t]): CInt = extern
 
   // int yaml_emitter_open(yaml_emitter_t *emitter);
+  def yaml_emitter_open(emitter: Ptr[yaml_emitter_t]): CInt = extern
 
   // int yaml_emitter_close(yaml_emitter_t *emitter);
+  def yaml_emitter_close(emitter: Ptr[yaml_emitter_t]): CInt = extern
 
   // int yaml_emitter_dump(yaml_emitter_t *emitter, yaml_document_t *document);
+  def yaml_emitter_dump(emitter: Ptr[yaml_emitter_t],
+                        document: Ptr[yaml_document_t]): CInt = extern
 
   // int yaml_emitter_flush(yaml_emitter_t *emitter);
+  def yaml_emitter_flush(emitter: Ptr[yaml_emitter_t]): CInt = extern
 
   object implicits {
     implicit class yaml_version_directive_t_ops(
