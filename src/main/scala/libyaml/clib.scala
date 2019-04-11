@@ -26,6 +26,12 @@ object clib {
   type yaml_tag_directive_s = CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]]
   type yaml_tag_directive_t = yaml_tag_directive_s
 
+  // this is not in the original definition.
+  // shared with yaml_event_tag_directives and yaml_document_tag_directives
+  // to define implicit class commonly
+  type yaml_tag_directives_t =
+    CStruct2[Ptr[yaml_tag_directive_t], Ptr[yaml_tag_directive_t]]
+
   type yaml_encoding_t = Encoding
 
   // yaml_break_t
@@ -74,8 +80,7 @@ object clib {
 
   type yaml_event_type_t = EventType
 
-  type yaml_event_tag_directives =
-    CStruct2[Ptr[yaml_tag_directive_t], Ptr[yaml_tag_directive_t]]
+  type yaml_event_tag_directives = yaml_tag_directives_t
 
   // yaml_event_s
   type yaml_event_stream_start = CStruct1[yaml_encoding_t]
@@ -100,16 +105,28 @@ object clib {
   type yaml_event_t = yaml_event_s
 
   // int yaml_stream_start_event_initialize(yaml event_t *event, yaml_encoding_t encoding);
+  def yaml_stream_start_event_initialize(event: Ptr[yaml_event_t],
+                                         encoding: yaml_encoding_t): CInt =
+    extern
 
   // int yaml_stream_end_event_initialize(yaml_event_t *event);
+  def yaml_stream_end_event_initialize(event: Ptr[yaml_event_t]): CInt = extern
 
   // int yaml_document_start_event_initialize(yaml_event_t *event,
   //         yaml_version_directive_t *version_directive,
   //         yaml_tag_directive_t *tag_directives_start,
   //         yaml_tag_directive_t *tag_directives_end,
   //         int implicit);
+  def yaml_document_start_event_initialize(
+      event: Ptr[yaml_event_t],
+      version_directive: Ptr[yaml_version_directive_t],
+      tag_directives_start: Ptr[yaml_tag_directive_t],
+      tag_directives_end: Ptr[yaml_tag_directive_t],
+      _implicit: CInt): CInt = extern
 
   // int yaml_document_end_event_initialize(yaml_event_t *event, int implicit);
+  def yaml_document_end_event_initialize(event: Ptr[yaml_event_t],
+                                         _implicit: CInt): CInt = extern
 
   // int yaml_alias_event_initialize(yaml_event_t *event, yaml_char_t *anchor);
 
@@ -118,6 +135,14 @@ object clib {
   //         yaml_char_t *value, int length,
   //         int plain_implicit, int quoted_implicit,
   //         yaml_scalar_style_t style);
+  def yaml_scalar_event_initialize(event: Ptr[yaml_event_t],
+                                   anchor: Ptr[yaml_char_t],
+                                   tag: Ptr[yaml_char_t],
+                                   value: Ptr[yaml_char_t],
+                                   length: CInt,
+                                   plain_implicit: CInt,
+                                   quoted_implicit: CInt,
+                                   style: yaml_scalar_style_t): CInt = extern
 
   // int yaml_sequence_start_event_initialize(yaml_event_t *event,
   //         yaml_char_t *anchor, yaml_char_t *tag, int implicit,
@@ -169,8 +194,7 @@ object clib {
   // yaml_document_s
   type yaml_document_nodes =
     CStruct3[Ptr[yaml_node_t], Ptr[yaml_node_t], Ptr[yaml_node_t]]
-  type yaml_document_tag_directives =
-    CStruct2[Ptr[yaml_tag_directive_t], Ptr[yaml_tag_directive_t]]
+  type yaml_document_tag_directives = yaml_tag_directives_t
   type yaml_document_s = CStruct7[yaml_document_nodes,
                                   Ptr[yaml_version_directive_t],
                                   yaml_document_tag_directives,
@@ -289,11 +313,17 @@ object clib {
   type yaml_emitter_t = extern
 
   // int yaml_emitter_initialize(yaml_emitter_t *emitter);
+  def yaml_emitter_initialize(emitter: Ptr[yaml_emitter_t]): CInt = extern
 
   // void yaml_emitter_delete(yaml_emitter_t *emitter);
+  def yaml_emitter_delete(emitter: Ptr[yaml_emitter_t]): Unit = extern
 
   // void yaml_emitter_set_output_string(yaml_emitter_t *emitter,
   //         unsigned char *output, size_t size, size_t *size_written);
+  def yaml_emitter_set_output_string(emitter: Ptr[yaml_emitter_t],
+                                     output: Ptr[CUnsignedChar],
+                                     size: CSize,
+                                     written: Ptr[CSize]): Unit = extern
 
   // void yaml_emitter_set_output_file(yaml_emitter_t *emitter, FILE *file);
 
@@ -301,18 +331,26 @@ object clib {
   //         yaml_write_handler_t *handler, void *data);
 
   // void yaml_emitter_set_encoding(yaml_emitter_t *emitter, yaml_encoding_t encoding);
+  def yaml_emitter_set_encoding(emitter: Ptr[yaml_emitter_t],
+                                encoding: yaml_encoding_t): Unit = extern
 
   // void yaml_emitter_set_canonical(yaml_emitter_t *emitter, int canonical);
+  def yaml_emitter_set_canonical(emitter: Ptr[yaml_emitter_t],
+                                 canonical: CInt): Unit = extern
 
   // void yaml_emitter_set_indent(yaml_emitter_t *emitter, int indent);
 
   // void yaml_emitter_set_width(yaml_emitter_t *emitter, int width);
 
   // void yaml_emitter_set_unicode(yaml_emitter_t *emitter, int unicode);
+  def yaml_emitter_set_unicode(emitter: Ptr[yaml_emitter_t],
+                               unicode: CInt): Unit = extern
 
   // void yaml_emitter_set_break(yaml_emitter_t *emitter, yaml_break_t line_break);
 
   // int yaml_emitter_emit(yaml_emitter_t *emitter, yaml_event_t *event);
+  def yaml_emitter_emit(emitter: Ptr[yaml_emitter_t],
+                        event: Ptr[yaml_event_t]): CInt = extern
 
   // int yaml_emitter_open(yaml_emitter_t *emitter);
 
@@ -334,10 +372,52 @@ object clib {
       def prefix: Ptr[yaml_char_t] = !p._2
     }
 
-    implicit class yaml_tag_directives_ops(
-        p: Ptr[yaml_document_tag_directives]) {
+    implicit class yaml_tag_directives_t_ops(p: Ptr[yaml_tag_directives_t]) {
       def start: Ptr[yaml_tag_directive_t] = !p._1
       def end: Ptr[yaml_tag_directive_t] = !p._2
+    }
+
+    implicit class yaml_event_stream_start_ops(
+        p: Ptr[yaml_event_stream_start]) {
+      def encoding: yaml_encoding_t = !p._1
+    }
+
+    implicit class yaml_event_document_start_ops(
+        p: Ptr[yaml_event_document_start]) {
+      def version_directive: Ptr[yaml_version_directive_t] = !p._1
+      def tag_directives: Ptr[yaml_event_tag_directives] =
+        p._2.cast[Ptr[yaml_event_tag_directives]]
+      def _implicit: CInt = !p._3
+    }
+
+    implicit class yaml_event_document_end_ops(
+        p: Ptr[yaml_event_document_end]) {
+      def _implicit: CInt = !p._1
+    }
+
+    implicit class yaml_event_scalar_ops(p: Ptr[yaml_event_scalar]) {
+      def anchor: Ptr[yaml_char_t] = !p._1
+      def tag: Ptr[yaml_char_t] = !p._2
+      def value: Ptr[yaml_char_t] = !p._3
+      def length: CSize = !p._4
+      def plain_implicit: CInt = !p._5
+      def quoted_implicit: CInt = !p._6
+      def style: yaml_scalar_style_t = !p._7
+    }
+
+    implicit class yaml_event_data_u_ops(p: Ptr[yaml_event_data_u]) {
+      def stream_start: Ptr[yaml_event_stream_start] =
+        p.cast[Ptr[yaml_event_stream_start]]
+      def document_start: Ptr[yaml_event_document_start] =
+        p.cast[Ptr[yaml_event_document_start]]
+      def document_end: Ptr[yaml_event_document_end] =
+        p.cast[Ptr[yaml_event_document_end]]
+      def scalar: Ptr[yaml_event_scalar] = p.cast[Ptr[yaml_event_scalar]]
+    }
+
+    implicit class yaml_event_t_ops(p: Ptr[yaml_event_t]) {
+      def typ: EventType = !p._1
+      def data: Ptr[yaml_event_data_u] = p._2.cast[Ptr[yaml_event_data_u]]
     }
 
     implicit class yaml_node_data_u_ops(p: Ptr[yaml_node_data_u]) {
