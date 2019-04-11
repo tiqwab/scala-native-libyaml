@@ -13,17 +13,15 @@ object EmitterTest extends SimpleTestSuite {
       |%YAML 1.1
       |%TAG !yaml! tag:yaml.org,2002:
       |---
-      |- apple
-      |- banana
-      |# name: Alice
-      |# address:
-      |#   city: Tokyo
-      |#   country: Japan
-      |# favorites:
-      |#   - name: apple
-      |#     reason: delicious
-      |#   - name: banana
-      |#     reason: yellow
+      |name: Alice
+      |address:
+      |  city: Tokyo
+      |  country: Japan
+      |favorites:
+      |  - name: apple
+      |    reason: delicious
+      |  - name: banana
+      |    reason: yellow
     """.stripMargin
 
   val BufferSize = 65536
