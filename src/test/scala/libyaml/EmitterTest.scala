@@ -13,10 +13,10 @@ object EmitterTest extends SimpleTestSuite {
       |%YAML 1.1
       |%TAG !yaml! tag:yaml.org,2002:
       |---
-      |# name: Alice
-      |# address:
-      |#   city: Tokyo
-      |#   country: Japan
+      |name: Alice
+      |address:
+      |  city: Tokyo
+      |  country: Japan
       |# favorites:
       |#   - name: apple
       |#     reason: delicious
@@ -27,6 +27,9 @@ object EmitterTest extends SimpleTestSuite {
   val BufferSize = 65536
   val MaxEvents = 1024
 
+  /**
+    * Return 1 if success, otherwise return 0.
+    */
   def copy_event(event_to: Ptr[yaml_event_t],
                  event_from: Ptr[yaml_event_t]): CInt = {
     event_from.typ match {
@@ -66,9 +69,15 @@ object EmitterTest extends SimpleTestSuite {
       case EventType.SequenceEndEvent =>
         ???
       case EventType.MappingStartEvent =>
-        ???
+        yaml_mapping_start_event_initialize(
+          event_to,
+          event_from.data.mapping_start.anchor,
+          event_from.data.mapping_start.tag,
+          event_from.data.mapping_start._implicit,
+          event_from.data.mapping_start.style
+        )
       case EventType.MappingEndEvent =>
-        ???
+        yaml_mapping_end_event_initialize(event_to)
       case _ =>
         1
     }
@@ -165,7 +174,32 @@ object EmitterTest extends SimpleTestSuite {
         case EventType.SequenceStartEvent =>
           ???
         case EventType.MappingStartEvent =>
-          ???
+          val anchor1 = event1.data.mapping_start.anchor.cast[CString]
+          val anchor2 = event2.data.mapping_start.anchor.cast[CString]
+          val tag1 = event1.data.mapping_start.tag.cast[CString]
+          val tag2 = event2.data.mapping_start.tag.cast[CString]
+          val implicit1 = event1.data.mapping_start._implicit
+          val implicit2 = event2.data.mapping_start._implicit
+
+          if (anchor1 != null && anchor1 == null) {
+            Left("anchor of event2 must not be null")
+          } else if (anchor1 == null && anchor2 != null) {
+            Left("anchor of event2 must be null")
+          } else if ((anchor1 != null && anchor2 != null) &&
+                     string.strcmp(anchor1, anchor2) != 0) {
+            Left("anchor is not same")
+          } else if (tag1 != null && tag2 == null) {
+            Left("tag of event2 must not be null")
+          } else if (tag1 == null && tag2 != null) {
+            Left("tag of event2 must be null")
+          } else if ((tag1 != null && tag2 != null) &&
+                     string.strcmp(tag1, tag2) != 0) {
+            Left("tag is not same")
+          } else if (implicit1 != implicit2) {
+            Left("implicit is not same")
+          } else {
+            Right(())
+          }
         case _ =>
           Right(())
       }
