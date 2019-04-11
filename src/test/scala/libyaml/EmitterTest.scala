@@ -156,29 +156,29 @@ object EmitterTest extends SimpleTestSuite {
           val quoted_implicit2 = event2.data.scalar.quoted_implicit
 
           if (anchor1 != null && anchor2 == null) {
-            Left("anchor of event2 must not be null")
+            Left("anchor of scalar event2 must not be null")
           } else if (anchor1 == null && anchor2 != null) {
-            Left("anchor of event2 must be null")
+            Left("anchor of scalar event2 must be null")
           } else if (anchor1 != null && anchor2 != null &&
                      string.strcmp(anchor1, anchor2) != 0) {
-            Left("anchor is not same")
+            Left("anchor of scalar event is not same")
           } else if (tag1 != null && tag2 == null &&
                      string.strcmp(tag1, toCString("!")) != 0) {
-            Left("tag of event2 must not be null")
+            Left("tag of scalar event2 must not be null")
           } else if (tag1 == null && tag2 != null &&
                      string.strcmp(tag2, toCString("!")) != 0) {
-            Left("tag of event2 must be null")
+            Left("tag of scalar event2 must be null")
           } else if (tag1 != null && tag2 != null &&
                      string.strcmp(tag1, tag2) != 0) {
-            Left("tas is not same")
+            Left("tas of scalar event is not same")
           } else if (length1 != length2) {
-            Left("length is not same")
+            Left("length of scalar is not same")
           } else if (string.memcmp(value1, value2, length1) != 0) {
-            Left("value is not same")
+            Left("value of scalar event is not same")
           } else if (plain_implicit1 != plain_implicit2) {
-            Left("plain_implicit is not same")
+            Left("plain_implicit of scalar event is not same")
           } else if (quoted_implicit1 != quoted_implicit2) {
-            Left("quoted_implicit is not same")
+            Left("quoted_implicit of scalar event is not same")
           } else {
             stdio.printf(toCString("%s, %s\n"), value1, value2)
             Right(())
@@ -193,21 +193,21 @@ object EmitterTest extends SimpleTestSuite {
           val implicit2 = event2.data.sequence_start._implicit
 
           if (anchor1 != null && anchor2 == null) {
-            Left("anchor of event2 must not be null")
+            Left("anchor of sequence event2 must not be null")
           } else if (anchor1 == null && anchor2 != null) {
-            Left("anchor of event2 must be null")
+            Left("anchor of sequence event2 must be null")
           } else if (anchor1 != null && anchor2 != null &&
                      string.strcmp(anchor1, anchor2) != 0) {
-            Left("anchor is not same")
+            Left("anchor of sequence event is not same")
           } else if (tag1 != null && tag2 == null) {
-            Left("tag of event2 must not be null")
+            Left("tag of sequence event2 must not be null")
           } else if (tag1 == null && tag2 != null) {
-            Left("tag of event2 must be null")
+            Left("tag of sequence event2 must be null")
           } else if (tag1 != null && tag2 != null &&
                      string.strcmp(tag1, tag2) != 0) {
-            Left("tag is not same")
+            Left("tag of sequence event is not same")
           } else if (implicit1 != implicit2) {
-            Left("implicit is not same")
+            Left("implicit of sequence event is not same")
           } else {
             Right(())
           }
@@ -221,21 +221,21 @@ object EmitterTest extends SimpleTestSuite {
           val implicit2 = event2.data.mapping_start._implicit
 
           if (anchor1 != null && anchor2 == null) {
-            Left("anchor of event2 must not be null")
+            Left("anchor of mapping event2 must not be null")
           } else if (anchor1 == null && anchor2 != null) {
-            Left("anchor of event2 must be null")
+            Left("anchor of mapping event2 must be null")
           } else if (anchor1 != null && anchor2 != null &&
                      string.strcmp(anchor1, anchor2) != 0) {
-            Left("anchor is not same")
+            Left("anchor of mapping event is not same")
           } else if (tag1 != null && tag2 == null) {
-            Left("tag of event2 must not be null")
+            Left("tag of mapping event2 must not be null")
           } else if (tag1 == null && tag2 != null) {
-            Left("tag of event2 must be null")
+            Left("tag of mapping event2 must be null")
           } else if (tag1 != null && tag2 != null &&
                      string.strcmp(tag1, tag2) != 0) {
-            Left("tag is not same")
+            Left("tag of mapping event is not same")
           } else if (implicit1 != implicit2) {
-            Left("implicit is not same")
+            Left("implicit of mapping event is not same")
           } else {
             Right(())
           }
