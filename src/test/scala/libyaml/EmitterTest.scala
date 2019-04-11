@@ -13,10 +13,12 @@ object EmitterTest extends SimpleTestSuite {
       |%YAML 1.1
       |%TAG !yaml! tag:yaml.org,2002:
       |---
-      |name: Alice
-      |address:
-      |  city: Tokyo
-      |  country: Japan
+      |- apple
+      |- banana
+      |# name: Alice
+      |# address:
+      |#   city: Tokyo
+      |#   country: Japan
       |# favorites:
       |#   - name: apple
       |#     reason: delicious
@@ -65,9 +67,15 @@ object EmitterTest extends SimpleTestSuite {
           event_from.data.scalar.style
         )
       case EventType.SequenceStartEvent =>
-        ???
+        yaml_sequence_start_event_initialize(
+          event_to,
+          event_from.data.sequence_start.anchor,
+          event_from.data.sequence_start.tag,
+          event_from.data.sequence_start._implicit,
+          event_from.data.sequence_start.style
+        )
       case EventType.SequenceEndEvent =>
-        ???
+        yaml_sequence_end_event_initialize(event_to)
       case EventType.MappingStartEvent =>
         yaml_mapping_start_event_initialize(
           event_to,
@@ -92,6 +100,7 @@ object EmitterTest extends SimpleTestSuite {
       event1.typ match {
         case EventType.StreamStartEvent =>
           Right(())
+
         case EventType.DocumentStartEvent =>
           val version1 = event1.data.document_start.version_directive
           val version2 = event2.data.document_start.version_directive
@@ -125,10 +134,13 @@ object EmitterTest extends SimpleTestSuite {
               Left("some tags does not match")
             }
           }
+
         case EventType.DocumentEndEvent =>
           Right(())
+
         case EventType.AliasEvent =>
           ???
+
         case EventType.ScalarEvent =>
           val anchor1 = event1.data.scalar.anchor.cast[CString]
           val anchor2 = event2.data.scalar.anchor.cast[CString]
@@ -147,7 +159,7 @@ object EmitterTest extends SimpleTestSuite {
             Left("anchor of event2 must not be null")
           } else if (anchor1 == null && anchor2 != null) {
             Left("anchor of event2 must be null")
-          } else if ((anchor1 != null && anchor2 != null) &&
+          } else if (anchor1 != null && anchor2 != null &&
                      string.strcmp(anchor1, anchor2) != 0) {
             Left("anchor is not same")
           } else if (tag1 != null && tag2 == null &&
@@ -156,7 +168,7 @@ object EmitterTest extends SimpleTestSuite {
           } else if (tag1 == null && tag2 != null &&
                      string.strcmp(tag2, toCString("!")) != 0) {
             Left("tag of event2 must be null")
-          } else if ((tag1 != null && tag2 != null) &&
+          } else if (tag1 != null && tag2 != null &&
                      string.strcmp(tag1, tag2) != 0) {
             Left("tas is not same")
           } else if (length1 != length2) {
@@ -171,8 +183,35 @@ object EmitterTest extends SimpleTestSuite {
             stdio.printf(toCString("%s, %s\n"), value1, value2)
             Right(())
           }
+
         case EventType.SequenceStartEvent =>
-          ???
+          val anchor1 = event1.data.sequence_start.anchor.cast[CString]
+          val anchor2 = event2.data.sequence_start.anchor.cast[CString]
+          val tag1 = event1.data.sequence_start.tag.cast[CString]
+          val tag2 = event2.data.sequence_start.tag.cast[CString]
+          val implicit1 = event1.data.sequence_start._implicit
+          val implicit2 = event2.data.sequence_start._implicit
+
+          if (anchor1 != null && anchor2 == null) {
+            Left("anchor of event2 must not be null")
+          } else if (anchor1 == null && anchor2 != null) {
+            Left("anchor of event2 must be null")
+          } else if (anchor1 != null && anchor2 != null &&
+                     string.strcmp(anchor1, anchor2) != 0) {
+            Left("anchor is not same")
+          } else if (tag1 != null && tag2 == null) {
+            Left("tag of event2 must not be null")
+          } else if (tag1 == null && tag2 != null) {
+            Left("tag of event2 must be null")
+          } else if (tag1 != null && tag2 != null &&
+                     string.strcmp(tag1, tag2) != 0) {
+            Left("tag is not same")
+          } else if (implicit1 != implicit2) {
+            Left("implicit is not same")
+          } else {
+            Right(())
+          }
+
         case EventType.MappingStartEvent =>
           val anchor1 = event1.data.mapping_start.anchor.cast[CString]
           val anchor2 = event2.data.mapping_start.anchor.cast[CString]
@@ -181,18 +220,18 @@ object EmitterTest extends SimpleTestSuite {
           val implicit1 = event1.data.mapping_start._implicit
           val implicit2 = event2.data.mapping_start._implicit
 
-          if (anchor1 != null && anchor1 == null) {
+          if (anchor1 != null && anchor2 == null) {
             Left("anchor of event2 must not be null")
           } else if (anchor1 == null && anchor2 != null) {
             Left("anchor of event2 must be null")
-          } else if ((anchor1 != null && anchor2 != null) &&
+          } else if (anchor1 != null && anchor2 != null &&
                      string.strcmp(anchor1, anchor2) != 0) {
             Left("anchor is not same")
           } else if (tag1 != null && tag2 == null) {
             Left("tag of event2 must not be null")
           } else if (tag1 == null && tag2 != null) {
             Left("tag of event2 must be null")
-          } else if ((tag1 != null && tag2 != null) &&
+          } else if (tag1 != null && tag2 != null &&
                      string.strcmp(tag1, tag2) != 0) {
             Left("tag is not same")
           } else if (implicit1 != implicit2) {
@@ -200,6 +239,7 @@ object EmitterTest extends SimpleTestSuite {
           } else {
             Right(())
           }
+
         case _ =>
           Right(())
       }

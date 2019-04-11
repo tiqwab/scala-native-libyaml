@@ -147,8 +147,16 @@ object clib {
   // int yaml_sequence_start_event_initialize(yaml_event_t *event,
   //         yaml_char_t *anchor, yaml_char_t *tag, int implicit,
   //         yaml_sequence_style_t style);
+  def yaml_sequence_start_event_initialize(event: Ptr[yaml_event_t],
+                                           anchor: Ptr[yaml_char_t],
+                                           tag: Ptr[yaml_char_t],
+                                           _implicit: CInt,
+                                           style: yaml_sequence_style_t): CInt =
+    extern
 
   // int yaml_sequence_end_event_initialize(yaml_event_t *event);
+  def yaml_sequence_end_event_initialize(event: Ptr[yaml_event_t]): CInt =
+    extern
 
   // int yaml_mapping_start_event_initialize(yaml_event_t *event,
   //         yaml_char_t *anchor, yaml_char_t *tag, int implicit,
@@ -412,11 +420,20 @@ object clib {
       def style: yaml_scalar_style_t = !p._7
     }
 
-    implicit class yaml_event_mapping_ops(p: Ptr[yaml_event_mapping_start]) {
+    implicit class yaml_event_mapping_start_ops(
+        p: Ptr[yaml_event_mapping_start]) {
       def anchor: Ptr[yaml_char_t] = !p._1
       def tag: Ptr[yaml_char_t] = !p._2
       def _implicit: CInt = !p._3
       def style: yaml_mapping_style_t = !p._4
+    }
+
+    implicit class yaml_event_sequence_start_ops(
+        p: Ptr[yaml_event_sequence_start]) {
+      def anchor: Ptr[yaml_char_t] = !p._1
+      def tag: Ptr[yaml_char_t] = !p._2
+      def _implicit: CInt = !p._3
+      def style: yaml_sequence_style_t = !p._4
     }
 
     implicit class yaml_event_data_u_ops(p: Ptr[yaml_event_data_u]) {
@@ -429,6 +446,8 @@ object clib {
       def scalar: Ptr[yaml_event_scalar] = p.cast[Ptr[yaml_event_scalar]]
       def mapping_start: Ptr[yaml_event_mapping_start] =
         p.cast[Ptr[yaml_event_mapping_start]]
+      def sequence_start: Ptr[yaml_event_sequence_start] =
+        p.cast[Ptr[yaml_event_sequence_start]]
     }
 
     implicit class yaml_event_t_ops(p: Ptr[yaml_event_t]) {
