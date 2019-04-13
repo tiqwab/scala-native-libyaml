@@ -46,6 +46,7 @@ object Sample2 extends SimpleTestSuite {
         yaml_parser_scan(parser, token)
         token.typ match {
           case TokenType.StreamStartToken =>
+            printf(toCString("%d\n"), token.data.stream_start.encoding)
             puts(toCString("STREAM START"))
           case TokenType.StreamEndToken =>
             puts(toCString("STREAM END"))
@@ -66,10 +67,10 @@ object Sample2 extends SimpleTestSuite {
           case _ =>
             printf(toCString("Got token of type %d\n"), token.typ)
         }
-        if (!token._1 != TokenType.StreamEndToken) {
+        if (token._1 == TokenType.StreamEndToken) {
           yaml_token_delete(token)
         }
-      } while (!token._1 != TokenType.StreamEndToken)
+      } while (token._1 == TokenType.StreamEndToken)
       yaml_token_delete(token)
 
       // Cleanup

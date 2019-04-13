@@ -64,21 +64,29 @@ object clib {
   //
 
   sealed trait Token
+  object Token {
+    sealed trait StreamStart
+    sealed trait Tag
+    sealed trait TagDirective
+    sealed trait VersionDirective
+  }
 
   type yaml_token_type_t = TokenType
 
   // yaml_token_t
-  type yaml_token_stream_start = CStruct1[yaml_encoding_t]
+  type yaml_token_stream_start = CStruct1[yaml_encoding_t] @@ Token.StreamStart
   type yaml_token_alias = CStruct1[Ptr[yaml_char_t]]
   type yaml_token_anchor = CStruct1[Ptr[yaml_char_t]]
-  type yaml_token_tag = CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]]
+  type yaml_token_tag =
+    CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]] @@ Token.Tag
 
   type yaml_token_scalar = yaml_data_scalar @@ Token
 
-  type yaml_token_version_directive = CStruct2[CInt, CInt]
+  type yaml_token_version_directive =
+    CStruct2[CInt, CInt] @@ Token.VersionDirective
 
   type yaml_token_tag_directive =
-    CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]] @@ Token
+    CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]] @@ Token.TagDirective
 
   type yaml_token_data_u = CArray[Byte, Nat.Digit[Nat._2, Nat._4]]
   type yaml_token_s =
@@ -92,12 +100,17 @@ object clib {
   // Events
   //
 
+  sealed trait Event
+  object Event {
+    sealed trait StreamStart
+  }
+
   type yaml_event_type_t = EventType
 
   type yaml_event_tag_directives = yaml_tag_directives_t
 
   // yaml_event_s
-  type yaml_event_stream_start = CStruct1[yaml_encoding_t]
+  type yaml_event_stream_start = CStruct1[yaml_encoding_t] @@ Event.StreamStart
   type yaml_event_document_start =
     CStruct3[Ptr[yaml_version_directive_t], yaml_event_tag_directives, CInt]
   type yaml_event_document_end = CStruct1[CInt]
@@ -429,22 +442,69 @@ object clib {
       def end: Ptr[yaml_tag_directive_t] = !p._2
     }
 
+    implicit class yaml_token_stream_start_ops(
+        p: Ptr[yaml_token_stream_start]) {
+      def encoding: Encoding = !p.cast[Ptr[CStruct1[yaml_encoding_t]]]._1
+    }
+
+    implicit class yaml_token_alias_ops(p: Ptr[yaml_token_alias]) {
+      def valueAlias: Ptr[yaml_char_t] = !p._1
+    }
+
+    implicit class yaml_token_anchor_ops(p: Ptr[yaml_token_anchor]) {
+      def valueToken: Ptr[yaml_char_t] = !p._1
+    }
+
+    implicit class yaml_token_tag_ops(p: Ptr[yaml_token_tag]) {
+      def handle: Ptr[yaml_char_t] =
+        !p.cast[Ptr[CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]]]]._1
+      def suffix: Ptr[yaml_char_t] =
+        !p.cast[Ptr[CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]]]]._2
+    }
+
     implicit class yaml_token_scalar_ops(p: Ptr[yaml_token_scalar]) {
       def value: Ptr[yaml_char_t] = !p.cast[Ptr[yaml_data_scalar]]._1
+      def length: CSize = !p.cast[Ptr[yaml_data_scalar]]._2
+      def style: ScalarStyle = !p.cast[Ptr[yaml_data_scalar]]._3
+    }
+
+    implicit class yaml_token_version_directive_ops(
+        p: Ptr[yaml_token_version_directive]) {
+      def major: CInt = !p.cast[Ptr[CStruct2[CInt, CInt]]]._1
+      def minor: CInt = !p.cast[Ptr[CStruct2[CInt, CInt]]]._2
+    }
+
+    implicit class yaml_token_tag_directive_ops(
+        p: Ptr[yaml_token_tag_directive]) {
+      def handle: Ptr[yaml_char_t] =
+        !p.cast[Ptr[CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]]]]._1
+      def prefix: Ptr[yaml_char_t] =
+        !p.cast[Ptr[CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]]]]._2
     }
 
     implicit class yaml_token_data_u_ops(p: Ptr[yaml_token_data_u]) {
+      def stream_start: Ptr[yaml_token_stream_start] =
+        p.cast[Ptr[yaml_token_stream_start]]
+      def alias: Ptr[yaml_token_alias] = p.cast[Ptr[yaml_token_alias]]
+      def anchor: Ptr[yaml_token_anchor] = p.cast[Ptr[yaml_token_anchor]]
+      def tag: Ptr[yaml_token_tag] = p.cast[Ptr[yaml_token_tag]]
       def scalar: Ptr[yaml_token_scalar] = p.cast[Ptr[yaml_token_scalar]]
+      def version_directive: Ptr[yaml_token_version_directive] =
+        p.cast[Ptr[yaml_token_version_directive]]
+      def tag_directive: Ptr[yaml_token_tag_directive] =
+        p.cast[Ptr[yaml_token_tag_directive]]
     }
 
     implicit class yaml_token_t_ops(p: Ptr[yaml_token_t]) {
       def typ: yaml_token_type_t = !p._1
       def data: Ptr[yaml_token_data_u] = p._2
+      def start_mark: Ptr[yaml_mark_t] = p._3
+      def end_mark: Ptr[yaml_mark_t] = p._4
     }
 
     implicit class yaml_event_stream_start_ops(
         p: Ptr[yaml_event_stream_start]) {
-      def encoding: yaml_encoding_t = !p._1
+      def encoding: yaml_encoding_t = !p.cast[Ptr[CStruct1[yaml_encoding_t]]]._1
     }
 
     implicit class yaml_event_document_start_ops(
