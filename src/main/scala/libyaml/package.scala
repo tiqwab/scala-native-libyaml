@@ -3,7 +3,7 @@ import scalanative.native._
 /**
   * Constants
   */
-package object libyaml {
+package object libyaml extends Tag {
   type TokenType = CLong
   object TokenType {
     /* An empty token. */

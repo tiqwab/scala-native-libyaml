@@ -1,6 +1,7 @@
 package libyaml
 
 import libyaml.clib._
+import libyaml.clib.implicits._
 import minitest._
 
 import scalanative.native._
@@ -43,7 +44,7 @@ object Sample2 extends SimpleTestSuite {
       // CODE HERE
       do {
         yaml_parser_scan(parser, token)
-        !token._1 match {
+        token.typ match {
           case TokenType.StreamStartToken =>
             puts(toCString("STREAM START"))
           case TokenType.StreamEndToken =>
@@ -61,10 +62,9 @@ object Sample2 extends SimpleTestSuite {
           case TokenType.BlockMappingStartToken =>
             puts(toCString("[Block mapping]"))
           case TokenType.ScalarToken =>
-            printf(toCString("scalar %s \n"),
-                   !token._2.cast[Ptr[yaml_token_scalar]]._1)
+            printf(toCString("scalar %s \n"), token.data.scalar.value)
           case _ =>
-            printf(toCString("Got token of type %d\n"), !token._1)
+            printf(toCString("Got token of type %d\n"), token.typ)
         }
         if (!token._1 != TokenType.StreamEndToken) {
           yaml_token_delete(token)
