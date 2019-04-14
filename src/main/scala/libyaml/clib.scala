@@ -724,10 +724,8 @@ object clib {
       def tag_directives: Ptr[yaml_document_tag_directives] = p._3
       def start_implicit: CInt = !p._4
       def end_implicit: CInt = !p._5
-      /*
-      def start_mark: yaml_mark_t = !p._6
-      def end_mark: yaml_mark_t = !p._7
-     */
+      def start_mark: Ptr[yaml_mark_t] = p._6
+      def end_mark: Ptr[yaml_mark_t] = p._7
     }
   }
 }
