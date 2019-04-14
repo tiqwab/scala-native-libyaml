@@ -4,7 +4,7 @@ import scalanative.native._
   * Constants
   */
 package object libyaml extends Tag {
-  type TokenType = CLong
+  type TokenType = CInt
   object TokenType {
     /* An empty token. */
     val NoToken = 0
@@ -37,7 +37,7 @@ package object libyaml extends Tag {
     val ScalarToken = 21
   }
 
-  type EventType = CLong
+  type EventType = CInt
   object EventType {
     val NoEvent = 0
 
@@ -57,7 +57,7 @@ package object libyaml extends Tag {
     val MappingEndEvent = 10
   }
 
-  type Encoding = CLong
+  type Encoding = CInt
   object Encoding {
     val Any = 0
     val UTF8 = 1
@@ -65,7 +65,7 @@ package object libyaml extends Tag {
     val UTF16BE = 3
   }
 
-  type ScalarStyle = CLong
+  type ScalarStyle = CInt
   object ScalarStyle {
     val Any = 0
 
@@ -78,7 +78,7 @@ package object libyaml extends Tag {
     val Folded = 5
   }
 
-  type SequenceStyle = CLong
+  type SequenceStyle = CInt
   object SequenceStyle {
     val AnySequenceStyle = 0
 
@@ -86,7 +86,7 @@ package object libyaml extends Tag {
     val FlowSequenceStyle = 2
   }
 
-  type MappingStyle = CLong
+  type MappingStyle = CInt
   object MappingStyle {
     val AnyMappingStyle = 0
 
@@ -107,7 +107,7 @@ package object libyaml extends Tag {
   val DefaultSequenceTag = SeqTag
   val DefaultMappingTag = MapTag
 
-  type NodeType = CLong
+  type NodeType = CInt
   object NodeType {
     val NoNode = 0
 
@@ -116,7 +116,7 @@ package object libyaml extends Tag {
     val MappingNode = 3
   }
 
-  type Break = CLong
+  type Break = CInt
   object Break {
     val AnyBreak = 0
     val CRBreak = 1
@@ -124,7 +124,7 @@ package object libyaml extends Tag {
     val CRLNBreak = 3
   }
 
-  type ErrorType = CLong
+  type ErrorType = CInt
   object ErrorType {
     val NoError = 0
     val MemoryError = 1
