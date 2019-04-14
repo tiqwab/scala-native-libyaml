@@ -46,9 +46,6 @@ object clib {
   type yaml_tag_directives_t =
     CStruct2[Ptr[yaml_tag_directive_t], Ptr[yaml_tag_directive_t]]
 
-  type yaml_data_scalar =
-    CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t]
-
   //
   // Node Styles
   //
@@ -63,24 +60,31 @@ object clib {
   // Tokens
   //
 
-  sealed trait Token
   object Token {
     sealed trait StreamStart
+    sealed trait Alias
+    sealed trait Anchor
     sealed trait Tag
+    sealed trait Scalar
     sealed trait TagDirective
     sealed trait VersionDirective
+    sealed trait Data
   }
 
   type yaml_token_type_t = TokenType
 
   // yaml_token_t
-  type yaml_token_stream_start = CStruct1[yaml_encoding_t] @@ Token.StreamStart
-  type yaml_token_alias = CStruct1[Ptr[yaml_char_t]]
-  type yaml_token_anchor = CStruct1[Ptr[yaml_char_t]]
+  type yaml_token_stream_start =
+    CStruct1[yaml_encoding_t] @@ Token.StreamStart
+  type yaml_token_alias =
+    CStruct1[Ptr[yaml_char_t]] @@ Token.Alias
+  type yaml_token_anchor =
+    CStruct1[Ptr[yaml_char_t]] @@ Token.Anchor
   type yaml_token_tag =
     CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]] @@ Token.Tag
 
-  type yaml_token_scalar = yaml_data_scalar @@ Token
+  type yaml_token_scalar =
+    CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t] @@ Token.Scalar
 
   type yaml_token_version_directive =
     CStruct2[CInt, CInt] @@ Token.VersionDirective
@@ -88,7 +92,8 @@ object clib {
   type yaml_token_tag_directive =
     CStruct2[Ptr[yaml_char_t], Ptr[yaml_char_t]] @@ Token.TagDirective
 
-  type yaml_token_data_u = CArray[Byte, Nat.Digit[Nat._2, Nat._4]]
+  type yaml_token_data_u =
+    CArray[Byte, Nat.Digit[Nat._2, Nat._4]] @@ Token.Data
   type yaml_token_s =
     CStruct4[yaml_token_type_t, yaml_token_data_u, yaml_mark_t, yaml_mark_t]
   type yaml_token_t = yaml_token_s
@@ -103,6 +108,13 @@ object clib {
   sealed trait Event
   object Event {
     sealed trait StreamStart
+    sealed trait DocumentStart
+    sealed trait DocumentEnd
+    sealed trait Alias
+    sealed trait Scalar
+    sealed trait SequenceStart
+    sealed trait MappingStart
+    sealed trait Data
   }
 
   type yaml_event_type_t = EventType
@@ -110,23 +122,27 @@ object clib {
   type yaml_event_tag_directives = yaml_tag_directives_t
 
   // yaml_event_s
-  type yaml_event_stream_start = CStruct1[yaml_encoding_t] @@ Event.StreamStart
+  type yaml_event_stream_start =
+    CStruct1[yaml_encoding_t] @@ Event.StreamStart
   type yaml_event_document_start =
-    CStruct3[Ptr[yaml_version_directive_t], yaml_event_tag_directives, CInt]
-  type yaml_event_document_end = CStruct1[CInt]
-  type yaml_event_alias = CStruct1[Ptr[yaml_char_t]]
+    CStruct3[Ptr[yaml_version_directive_t], yaml_event_tag_directives, CInt] @@ Event.DocumentStart
+  type yaml_event_document_end =
+    CStruct1[CInt] @@ Event.DocumentEnd
+  type yaml_event_alias =
+    CStruct1[Ptr[yaml_char_t]] @@ Event.Alias
   type yaml_event_scalar = CStruct7[Ptr[yaml_char_t],
                                     Ptr[yaml_char_t],
                                     Ptr[yaml_char_t],
                                     CSize,
                                     CInt,
                                     CInt,
-                                    yaml_scalar_style_t]
+                                    yaml_scalar_style_t] @@ Event.Scalar
   type yaml_event_sequence_start =
-    CStruct4[Ptr[yaml_char_t], Ptr[yaml_char_t], CInt, yaml_sequence_style_t]
+    CStruct4[Ptr[yaml_char_t], Ptr[yaml_char_t], CInt, yaml_sequence_style_t] @@ Event.SequenceStart
   type yaml_event_mapping_start =
-    CStruct4[Ptr[yaml_char_t], Ptr[yaml_char_t], CInt, yaml_mapping_style_t]
-  type yaml_event_data_u = CArray[Byte, Nat.Digit[Nat._4, Nat._8]]
+    CStruct4[Ptr[yaml_char_t], Ptr[yaml_char_t], CInt, yaml_mapping_style_t] @@ Event.MappingStart
+  type yaml_event_data_u =
+    CArray[Byte, Nat.Digit[Nat._4, Nat._8]] @@ Event.Data
   type yaml_event_s =
     CStruct4[yaml_event_type_t, yaml_event_data_u, yaml_mark_t, yaml_mark_t]
   type yaml_event_t = yaml_event_s
@@ -207,7 +223,9 @@ object clib {
   // Nodes
   //
 
-  sealed trait Node
+  object Node {
+    sealed trait Scalar
+  }
 
   type yaml_node_type_t = NodeType
 
@@ -217,7 +235,8 @@ object clib {
   type yaml_node_pair_t = yaml_node_pair_s
 
   // yaml_node_s
-  type yaml_node_scalar = yaml_data_scalar @@ Node
+  type yaml_node_scalar =
+    CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t] @@ Node.Scalar
 
   type yaml_node_sequence_items = CStruct3[Ptr[yaml_node_item_t],
                                            Ptr[yaml_node_item_t],
@@ -442,17 +461,23 @@ object clib {
       def end: Ptr[yaml_tag_directive_t] = !p._2
     }
 
+    //
+    // yaml_token_t
+    //
+
     implicit class yaml_token_stream_start_ops(
         p: Ptr[yaml_token_stream_start]) {
       def encoding: Encoding = !p.cast[Ptr[CStruct1[yaml_encoding_t]]]._1
     }
 
     implicit class yaml_token_alias_ops(p: Ptr[yaml_token_alias]) {
-      def valueAlias: Ptr[yaml_char_t] = !p._1
+      def value: Ptr[yaml_char_t] =
+        !p.cast[Ptr[CStruct1[Ptr[yaml_char_t]]]]._1
     }
 
     implicit class yaml_token_anchor_ops(p: Ptr[yaml_token_anchor]) {
-      def valueToken: Ptr[yaml_char_t] = !p._1
+      def value: Ptr[yaml_char_t] =
+        !p.cast[Ptr[CStruct1[Ptr[yaml_char_t]]]]._1
     }
 
     implicit class yaml_token_tag_ops(p: Ptr[yaml_token_tag]) {
@@ -463,9 +488,12 @@ object clib {
     }
 
     implicit class yaml_token_scalar_ops(p: Ptr[yaml_token_scalar]) {
-      def value: Ptr[yaml_char_t] = !p.cast[Ptr[yaml_data_scalar]]._1
-      def length: CSize = !p.cast[Ptr[yaml_data_scalar]]._2
-      def style: ScalarStyle = !p.cast[Ptr[yaml_data_scalar]]._3
+      def value: Ptr[yaml_char_t] =
+        !p.cast[Ptr[CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t]]]._1
+      def length: CSize =
+        !p.cast[Ptr[CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t]]]._2
+      def style: ScalarStyle =
+        !p.cast[Ptr[CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t]]]._3
     }
 
     implicit class yaml_token_version_directive_ops(
@@ -502,6 +530,10 @@ object clib {
       def end_mark: Ptr[yaml_mark_t] = p._4
     }
 
+    //
+    // yaml_event_t
+    //
+
     implicit class yaml_event_stream_start_ops(
         p: Ptr[yaml_event_stream_start]) {
       def encoding: yaml_encoding_t = !p.cast[Ptr[CStruct1[yaml_encoding_t]]]._1
@@ -509,45 +541,69 @@ object clib {
 
     implicit class yaml_event_document_start_ops(
         p: Ptr[yaml_event_document_start]) {
-      def version_directive: Ptr[yaml_version_directive_t] = !p._1
-      def tag_directives: Ptr[yaml_event_tag_directives] =
-        p._2 // .cast[Ptr[yaml_event_tag_directives]]
-      def _implicit: CInt = !p._3
+      type T = Ptr[CStruct3[Ptr[yaml_version_directive_t],
+                            yaml_event_tag_directives,
+                            CInt]]
+
+      def version_directive: Ptr[yaml_version_directive_t] = !p.cast[T]._1
+      def tag_directives: Ptr[yaml_event_tag_directives] = p.cast[T]._2
+      def _implicit: CInt = !p.cast[T]._3
     }
 
     implicit class yaml_event_document_end_ops(
         p: Ptr[yaml_event_document_end]) {
-      def _implicit: CInt = !p._1
+      def _implicit: CInt =
+        !p.cast[Ptr[CStruct1[CInt]]]._1
     }
 
     implicit class yaml_event_alias_ops(p: Ptr[yaml_event_alias]) {
-      def anchor: Ptr[yaml_char_t] = !p._1
+      def anchor: Ptr[yaml_char_t] =
+        !p.cast[Ptr[CStruct1[Ptr[yaml_char_t]]]]._1
     }
 
     implicit class yaml_event_scalar_ops(p: Ptr[yaml_event_scalar]) {
-      def anchor: Ptr[yaml_char_t] = !p._1
-      def tag: Ptr[yaml_char_t] = !p._2
-      def value: Ptr[yaml_char_t] = !p._3
-      def length: CSize = !p._4
-      def plain_implicit: CInt = !p._5
-      def quoted_implicit: CInt = !p._6
-      def style: yaml_scalar_style_t = !p._7
-    }
+      type T = Ptr[
+        CStruct7[Ptr[yaml_char_t],
+                 Ptr[yaml_char_t],
+                 Ptr[yaml_char_t],
+                 CSize,
+                 CInt,
+                 CInt,
+                 yaml_scalar_style_t]]
 
-    implicit class yaml_event_mapping_start_ops(
-        p: Ptr[yaml_event_mapping_start]) {
-      def anchor: Ptr[yaml_char_t] = !p._1
-      def tag: Ptr[yaml_char_t] = !p._2
-      def _implicit: CInt = !p._3
-      def style: yaml_mapping_style_t = !p._4
+      def anchor: Ptr[yaml_char_t] = !p.cast[T]._1
+      def tag: Ptr[yaml_char_t] = !p.cast[T]._2
+      def value: Ptr[yaml_char_t] = !p.cast[T]._3
+      def length: CSize = !p.cast[T]._4
+      def plain_implicit: CInt = !p.cast[T]._5
+      def quoted_implicit: CInt = !p.cast[T]._6
+      def style: yaml_scalar_style_t = !p.cast[T]._7
     }
 
     implicit class yaml_event_sequence_start_ops(
         p: Ptr[yaml_event_sequence_start]) {
-      def anchor: Ptr[yaml_char_t] = !p._1
-      def tag: Ptr[yaml_char_t] = !p._2
-      def _implicit: CInt = !p._3
-      def style: yaml_sequence_style_t = !p._4
+      type T = Ptr[CStruct4[Ptr[yaml_char_t],
+                            Ptr[yaml_char_t],
+                            CInt,
+                            yaml_sequence_style_t]]
+
+      def anchor: Ptr[yaml_char_t] = !p.cast[T]._1
+      def tag: Ptr[yaml_char_t] = !p.cast[T]._2
+      def _implicit: CInt = !p.cast[T]._3
+      def style: yaml_sequence_style_t = !p.cast[T]._4
+    }
+
+    implicit class yaml_event_mapping_start_ops(
+        p: Ptr[yaml_event_mapping_start]) {
+      type T = Ptr[CStruct4[Ptr[yaml_char_t],
+                            Ptr[yaml_char_t],
+                            CInt,
+                            yaml_mapping_style_t]]
+
+      def anchor: Ptr[yaml_char_t] = !p.cast[T]._1
+      def tag: Ptr[yaml_char_t] = !p.cast[T]._2
+      def _implicit: CInt = !p.cast[T]._3
+      def style: yaml_mapping_style_t = !p.cast[T]._4
     }
 
     implicit class yaml_event_data_u_ops(p: Ptr[yaml_event_data_u]) {
@@ -557,18 +613,26 @@ object clib {
         p.cast[Ptr[yaml_event_document_start]]
       def document_end: Ptr[yaml_event_document_end] =
         p.cast[Ptr[yaml_event_document_end]]
-      def alias: Ptr[yaml_event_alias] = p.cast[Ptr[yaml_event_alias]]
-      def scalar: Ptr[yaml_event_scalar] = p.cast[Ptr[yaml_event_scalar]]
-      def mapping_start: Ptr[yaml_event_mapping_start] =
-        p.cast[Ptr[yaml_event_mapping_start]]
+      def alias: Ptr[yaml_event_alias] =
+        p.cast[Ptr[yaml_event_alias]]
+      def scalar: Ptr[yaml_event_scalar] =
+        p.cast[Ptr[yaml_event_scalar]]
       def sequence_start: Ptr[yaml_event_sequence_start] =
         p.cast[Ptr[yaml_event_sequence_start]]
+      def mapping_start: Ptr[yaml_event_mapping_start] =
+        p.cast[Ptr[yaml_event_mapping_start]]
     }
 
     implicit class yaml_event_t_ops(p: Ptr[yaml_event_t]) {
       def typ: EventType = !p._1
       def data: Ptr[yaml_event_data_u] = p._2.cast[Ptr[yaml_event_data_u]]
+      def start_mark: Ptr[yaml_mark_t] = p._3
+      def end_mark: Ptr[yaml_mark_t] = p._4
     }
+
+    //
+    // yaml_node_t
+    //
 
     implicit class yaml_node_data_u_ops(p: Ptr[yaml_node_data_u]) {
       def scalar: Ptr[yaml_node_scalar] = p.cast[Ptr[yaml_node_scalar]]
@@ -577,9 +641,12 @@ object clib {
     }
 
     implicit class yaml_node_scalar_ops(p: Ptr[yaml_node_scalar]) {
-      def value: Ptr[yaml_char_t] = !p.cast[Ptr[yaml_data_scalar]]._1
-      def length: CSize = !p.cast[Ptr[yaml_data_scalar]]._2
-      def style: yaml_scalar_style_t = !p.cast[Ptr[yaml_data_scalar]]._3
+      def value: Ptr[yaml_char_t] =
+        !p.cast[Ptr[CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t]]]._1
+      def length: CSize =
+        !p.cast[Ptr[CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t]]]._2
+      def style: yaml_scalar_style_t =
+        !p.cast[Ptr[CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t]]]._3
     }
 
     implicit class yaml_node_sequence_items_ops(

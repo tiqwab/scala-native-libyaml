@@ -1,6 +1,7 @@
 package libyaml
 
 import libyaml.clib._
+import libyaml.clib.implicits._
 import minitest._
 
 import scalanative.native._
@@ -34,7 +35,7 @@ object Sample3 extends SimpleTestSuite {
       // CODE HERE
       do {
         yaml_parser_parse(parser, event)
-        !event._1 match {
+        event.typ match {
           case EventType.NoEvent =>
             puts(toCString("No event!"))
           case EventType.StreamStartEvent =>
@@ -55,17 +56,17 @@ object Sample3 extends SimpleTestSuite {
             puts(toCString("<b>End Mapping</b>"))
           case EventType.AliasEvent =>
             printf(toCString("Got alias (anchor %s)\n"),
-                   !event._2.cast[Ptr[yaml_event_alias]]._1)
+                   event.data.alias.anchor.cast[CString])
           case EventType.ScalarEvent =>
             printf(toCString("Got scalar (value %s)\n"),
-                   !event._2.cast[Ptr[yaml_event_scalar]]._3)
+                   event.data.scalar.value.cast[CString])
           case _ =>
             fail(s"unexpected type: ${!event._1}\n")
         }
-        if (!event._1 != EventType.StreamEndEvent) {
+        if (event.typ != EventType.StreamEndEvent) {
           yaml_event_delete(event)
         }
-      } while (!event._1 != EventType.StreamEndEvent)
+      } while (event.typ != EventType.StreamEndEvent)
       yaml_event_delete(event)
 
       // Cleanup

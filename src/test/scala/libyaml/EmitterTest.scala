@@ -275,13 +275,13 @@ object EmitterTest extends SimpleTestSuite {
       val event = LibYaml.Event()
       val events = alloc[yaml_event_t](MaxEvents)
 
-      def emitLoop(eventNum: Int): Either[String, Unit] = {
+      def emitLoop(eventNum: Int): Either[String, Int] = {
         if (yaml_parser_parse(parser, event) == 0) {
           Left("Failed to parse")
         } else {
           event.typ match {
             case EventType.StreamEndEvent =>
-              Right(())
+              Right(eventNum)
             case _ if eventNum >= MaxEvents =>
               Left("Too many events")
             case _ =>
@@ -292,9 +292,9 @@ object EmitterTest extends SimpleTestSuite {
           }
         }
       }
-      emitLoop(0) match {
-        case Right(_)  => ()
-        case Left(msg) => fail(s"Failed in emitLoop: $msg")
+      val eventNum = emitLoop(0) match {
+        case Right(x)  => x
+        case Left(msg) => fail(s"Failed in emitLoop: $msg"); 0
       }
 
       yaml_emitter_delete(emitter)
@@ -329,7 +329,7 @@ object EmitterTest extends SimpleTestSuite {
       }
 
       yaml_parser_delete(parser)
-      0 until MaxEvents foreach { i =>
+      0 until eventNum foreach { i =>
         yaml_event_delete(events + i)
       }
     }
