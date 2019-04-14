@@ -225,30 +225,39 @@ object clib {
 
   object Node {
     sealed trait Scalar
+    sealed trait SequenceItems
+    sealed trait Sequence
+    sealed trait MappingPairs
+    sealed trait Mapping
+    sealed trait Data
   }
 
   type yaml_node_type_t = NodeType
 
   type yaml_node_item_t = CInt
 
-  type yaml_node_pair_s = CStruct2[CInt, CInt]
+  type yaml_node_pair_s =
+    CStruct2[CInt, CInt]
   type yaml_node_pair_t = yaml_node_pair_s
 
   // yaml_node_s
   type yaml_node_scalar =
     CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t] @@ Node.Scalar
 
-  type yaml_node_sequence_items = CStruct3[Ptr[yaml_node_item_t],
-                                           Ptr[yaml_node_item_t],
-                                           Ptr[yaml_node_item_t]]
+  type yaml_node_sequence_items =
+    CStruct3[Ptr[yaml_node_item_t],
+             Ptr[yaml_node_item_t],
+             Ptr[yaml_node_item_t]] @@ Node.SequenceItems
   type yaml_node_sequence =
-    CStruct2[yaml_node_sequence_items, yaml_sequence_style_t]
-  type yaml_node_mapping_pairs = CStruct3[Ptr[yaml_node_pair_t],
-                                          Ptr[yaml_node_pair_t],
-                                          Ptr[yaml_node_pair_t]]
+    CStruct2[yaml_node_sequence_items, yaml_sequence_style_t] @@ Node.Sequence
+  type yaml_node_mapping_pairs =
+    CStruct3[Ptr[yaml_node_pair_t],
+             Ptr[yaml_node_pair_t],
+             Ptr[yaml_node_pair_t]] @@ Node.MappingPairs
   type yaml_node_mapping =
-    CStruct2[yaml_node_mapping_pairs, yaml_mapping_style_t]
-  type yaml_node_data_u = CArray[Byte, Nat.Digit[Nat._3, Nat._2]]
+    CStruct2[yaml_node_mapping_pairs, yaml_mapping_style_t] @@ Node.Mapping
+  type yaml_node_data_u =
+    CArray[Byte, Nat.Digit[Nat._3, Nat._2]] // @@ Node.Data // FIXME: failed to parse NodeType?
   type yaml_node_s = CStruct5[yaml_node_type_t,
                               Ptr[yaml_char_t],
                               yaml_node_data_u,
@@ -634,12 +643,6 @@ object clib {
     // yaml_node_t
     //
 
-    implicit class yaml_node_data_u_ops(p: Ptr[yaml_node_data_u]) {
-      def scalar: Ptr[yaml_node_scalar] = p.cast[Ptr[yaml_node_scalar]]
-      def sequence: Ptr[yaml_node_sequence] = p.cast[Ptr[yaml_node_sequence]]
-      def mapping: Ptr[yaml_node_mapping] = p.cast[Ptr[yaml_node_mapping]]
-    }
-
     implicit class yaml_node_scalar_ops(p: Ptr[yaml_node_scalar]) {
       def value: Ptr[yaml_char_t] =
         !p.cast[Ptr[CStruct3[Ptr[yaml_char_t], CSize, yaml_scalar_style_t]]]._1
@@ -651,14 +654,20 @@ object clib {
 
     implicit class yaml_node_sequence_items_ops(
         p: Ptr[yaml_node_sequence_items]) {
-      def start: Ptr[yaml_node_item_t] = !p._1
-      def end: Ptr[yaml_node_item_t] = !p._2
-      def top: Ptr[yaml_node_item_t] = !p._3
+      type T = Ptr[CStruct3[Ptr[yaml_node_item_t],
+                            Ptr[yaml_node_item_t],
+                            Ptr[yaml_node_item_t]]]
+
+      def start: Ptr[yaml_node_item_t] = !p.cast[T]._1
+      def end: Ptr[yaml_node_item_t] = !p.cast[T]._2
+      def top: Ptr[yaml_node_item_t] = !p.cast[T]._3
     }
 
     implicit class yaml_node_sequence_ops(p: Ptr[yaml_node_sequence]) {
-      def items: Ptr[yaml_node_sequence_items] = p._1
-      def style: yaml_sequence_style_t = !p._2
+      type T = Ptr[CStruct2[yaml_node_sequence_items, yaml_sequence_style_t]]
+
+      def items: Ptr[yaml_node_sequence_items] = p.cast[T]._1
+      def style: yaml_sequence_style_t = !p.cast[T]._2
     }
 
     implicit class yaml_node_pair_t_ops(p: Ptr[yaml_node_pair_t]) {
@@ -668,21 +677,40 @@ object clib {
 
     implicit class yaml_node_mapping_pairs_ops(
         p: Ptr[yaml_node_mapping_pairs]) {
-      def start: Ptr[yaml_node_pair_t] = !p._1
-      def end: Ptr[yaml_node_pair_t] = !p._2
-      def top: Ptr[yaml_node_pair_t] = !p._3
+      type T = Ptr[CStruct3[Ptr[yaml_node_pair_t],
+                            Ptr[yaml_node_pair_t],
+                            Ptr[yaml_node_pair_t]]]
+
+      def start: Ptr[yaml_node_pair_t] = !p.cast[T]._1
+      def end: Ptr[yaml_node_pair_t] = !p.cast[T]._2
+      def top: Ptr[yaml_node_pair_t] = !p.cast[T]._3
     }
 
     implicit class yaml_node_mapping_ops(p: Ptr[yaml_node_mapping]) {
-      def pairs: Ptr[yaml_node_mapping_pairs] = p._1
-      def style: yaml_mapping_style_t = !p._2
+      type T =
+        Ptr[CStruct2[yaml_node_mapping_pairs, yaml_mapping_style_t]]
+
+      def pairs: Ptr[yaml_node_mapping_pairs] = p.cast[T]._1
+      def style: yaml_mapping_style_t = !p.cast[T]._2
+    }
+
+    implicit class yaml_node_data_u_ops(p: Ptr[yaml_node_data_u]) {
+      def scalar: Ptr[yaml_node_scalar] = p.cast[Ptr[yaml_node_scalar]]
+      def sequence: Ptr[yaml_node_sequence] = p.cast[Ptr[yaml_node_sequence]]
+      def mapping: Ptr[yaml_node_mapping] = p.cast[Ptr[yaml_node_mapping]]
     }
 
     implicit class yaml_node_t_ops(p: Ptr[yaml_node_t]) {
       def typ: NodeType = !p._1
       def tag: Ptr[yaml_char_t] = !p._2
       def data: Ptr[yaml_node_data_u] = p._3.cast[Ptr[yaml_node_data_u]]
+      def start_mark: Ptr[yaml_mark_t] = p._4
+      def end_mark: Ptr[yaml_mark_t] = p._5
     }
+
+    //
+    // yaml_document_t
+    //
 
     implicit class yaml_document_nodes_ops(p: Ptr[yaml_document_nodes]) {
       def start: Ptr[yaml_node_t] = !p._1
