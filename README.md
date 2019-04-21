@@ -1,8 +1,8 @@
-### scala-native-libyaml
+# scala-native-libyaml
 
 scala-native bindings for [libyaml][1].
 
-### Dependency
+## Dependency
 
 For `build.sbt`:
 
@@ -10,13 +10,13 @@ For `build.sbt`:
 
 ```
 
-### Example
+## Example
 
 ```scala
 
 ```
 
-### License
+## License
 
 MIT License.
 
