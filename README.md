@@ -8,7 +8,7 @@ For `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.tiqwab" %%% "scala-native-libyaml" % "0.0.1"
+  "com.tiqwab" %%% "scala-native-libyaml" % "0.0.2"
 )
 ```
 
